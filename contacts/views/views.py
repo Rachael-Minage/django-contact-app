@@ -1,5 +1,4 @@
-from django.shortcuts import render
-# from rest_framework.generics import  RetrieveUpdateDestroyAPIView
+from django.shortcuts import render, get_object_or_404,redirect
 from contacts.serializers import ContactListSerializer
 from contacts.models.models import Contact
 from rest_framework.response import Response
@@ -7,6 +6,10 @@ from rest_framework.decorators import api_view
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework import status
+from contacts.forms.forms import ContactForm, EditContactForm
+from django.contrib import messages
+
+
 
 
 @swagger_auto_schema(
@@ -82,3 +85,37 @@ def contact_detail_view(request, id):
     elif request.method == 'DELETE':
         contact.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+def index(request):
+    contacts = Contact.objects.all()
+    return render(request, 'contacts/index.html', {'contacts': contacts})
+
+def addContact(request):
+    return render(request, 'contacts/new.html')
+
+def create_contact(request):
+    if request.method == "POST":
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Contact saved successfully.')
+            return redirect('index')
+    else:
+        form = ContactForm()
+    return render(request, 'contacts/new.html', {'form': form})
+
+def edit_contact(request, id):
+    contact = get_object_or_404(Contact, id=id)
+    if request.method == "POST":
+        form = EditContactForm(request.POST, instance=contact)
+        if form.is_valid():
+            form.save()
+            return redirect('contact-profile', id=id)
+    else:
+        form = EditContactForm(instance=contact)
+    return render(request, 'contacts/edit.html', {'form': form, 'contact': contact})
+
+def contact_profile(request, id):
+    contact = get_object_or_404(Contact, id=id)
+    return render(request, 'contacts/contact_profile.html', {'contact': contact})
+
