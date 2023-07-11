@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 from django.utils.timezone import make_aware
 from contacts.serializers import ContactListSerializer
-from contacts.models import Contact
+from contacts.models.models import Contact
 from datetime import datetime, timezone
 
 @pytest.fixture

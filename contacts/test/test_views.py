@@ -2,14 +2,19 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
-from contacts.models import Contact
+from contacts.models.models import Contact
 from contacts.serializers import ContactListSerializer
-
+from django.test import Client
+from contacts.forms.forms import ContactForm, EditContactForm
 
 @pytest.fixture
 def api_client():
     return APIClient()
 
+
+@pytest.fixture
+def client():
+    return Client()
 
 @pytest.mark.django_db
 def test_contact_list_view(api_client):
@@ -98,3 +103,58 @@ def test_contact_detail_view(api_client):
     # Check the response status code and database deletion
     assert response.status_code == status.HTTP_204_NO_CONTENT
     assert not Contact.objects.filter(id=contact.id).exists()
+
+
+
+@pytest.fixture
+def create_contact():
+    def _create_contact(name, email, phone_number, category):
+        return Contact.objects.create(name=name, email=email, phone_number=phone_number, category=category)
+    return _create_contact    
+
+
+@pytest.mark.django_db
+def test_index_view(client, create_contact):
+    contact1 = create_contact(name='John Doe', email='john@example.com', phone_number='1234567890', category='Friends')
+    contact2 = create_contact(name='Jane Smith', email='jane@example.com', phone_number='9876543210', category='Work')
+
+    url = reverse('index')
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert 'contacts' in response.context
+    assert len(response.context['contacts']) == 2
+    assert contact1 in response.context['contacts']
+    assert contact2 in response.context['contacts']
+
+
+@pytest.mark.django_db
+def test_add_contact_view(client):
+    url = reverse('add-contact')
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+@pytest.mark.django_db
+def test_add_contact_view(client):
+    url = reverse('add-contact')
+    response = client.get(url)
+
+    assert response.status_code == 200
+
+
+
+
+
+@pytest.mark.django_db
+def test_contact_profile_view(client, create_contact):
+    contact = create_contact(name='John Doe', email='john@example.com', phone_number='1234567890', category='Friends')
+
+    url = reverse('contact-profile', args=[contact.id])
+    response = client.get(url)
+
+    assert response.status_code == 200
+    assert 'contact' in response.context
+    assert response.context['contact'] == contact
+
+    
