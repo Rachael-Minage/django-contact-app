@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from contacts.models import Contact
+from contacts.models.models import Contact
 import datetime
 
 @pytest.mark.django_db
