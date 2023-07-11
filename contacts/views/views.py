@@ -119,3 +119,12 @@ def contact_profile(request, id):
     contact = get_object_or_404(Contact, id=id)
     return render(request, 'contacts/contact_profile.html', {'contact': contact})
 
+def delete_contact(request, id):
+    contact = get_object_or_404(Contact, id=id)
+    if request.method == 'POST':
+        contact.delete()
+        return redirect('index')
+    return render(request, 'contacts/delete_contact.html', {'contact': contact})
+
+
+
